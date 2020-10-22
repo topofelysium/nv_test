@@ -14,6 +14,13 @@ tickets의 각 행[a, b]는 a 공항에서 b 공항으로 가는 항공권이 있다는 의미입니다.
 tickets	return
 [[ICN, JFK], [HND, IAD], [JFK, HND]][ICN, JFK, HND, IAD]
 [[ICN, SFO], [ICN, ATL], [SFO, ATL], [ATL, ICN], [ATL, SFO]][ICN, ATL, ICN, SFO, ATL, SFO]
+
+[ICN, SFO]	[ICN, ATL]	[SFO, ATL]	[ATL, ICN]
+[SFO, ATL]	[ATL, ICN]	[ATL, ICN]	[ICN, SFO]
+[ATL, ICN]	[ICN, SFO]	[ICN, SFO]	[SFO, ATL]
+[ICN, ATL]	[SFO, ATL]				[ATL, SFO]
+[ATL, SFO]	[ATL, SFO]
+
 입출력 예 설명
 예제 #1
 
@@ -26,10 +33,64 @@ tickets	return
 
 #include <string>
 #include <vector>
+#include <algorithm>
 
 using namespace std;
 
-vector<string> solution(vector<vector<string>> tickets) {
-	vector<string> answer;
-	return answer;
+namespace travel_route {
+	void solutionImpl(string begin, vector<bool>& isVisit, vector<vector<string>>& tickets, vector<int>& answer)
+	{
+		for (auto i=0; i<tickets.size(); ++i)
+		{
+			if (isVisit[i] == true)
+			{
+				continue;
+			}
+
+			if (begin == tickets[i][0])
+			{
+				answer.push_back(i);
+				isVisit[i] = true;
+
+				solutionImpl(tickets[i][1], isVisit, tickets, answer);
+			}
+		}
+	}
+
+	vector<string> solution(vector<vector<string>> tickets) 
+	{
+		vector<vector<string>> answers;
+		
+		for (auto i=0; i<tickets.size(); ++i)
+		{
+			if (tickets[i][0] != "ICN")
+			{
+				continue;
+			}
+
+			vector<int> indies;
+			vector<bool> isVisit;
+			isVisit.resize(tickets.size(), false);
+			isVisit[i] = true;
+
+			indies.push_back(i);
+			solutionImpl(tickets[i][1], isVisit, tickets, indies);
+
+			vector<string> answer;
+
+			auto it = indies.begin();
+			answer.push_back(tickets[*it][0]);
+
+			while (it != indies.end())
+			{
+				answer.push_back(tickets[*it][1]);
+				it++;
+			}
+
+			answers.push_back(answer);
+		}
+
+		std::sort(answers.begin(), answers.end());
+		return answers[0];
+	}
 }
