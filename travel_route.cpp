@@ -38,59 +38,56 @@ tickets	return
 using namespace std;
 
 namespace travel_route {
-	void solutionImpl(string begin, vector<bool>& isVisit, vector<vector<string>>& tickets, vector<int>& answer)
+	
+	enum
 	{
-		for (auto i=0; i<tickets.size(); ++i)
+		eStart = 0,
+		eEnd = 1
+	};
+	bool solutionImpl(string start, vector<vector<string>>& tickets, vector<bool>& isVisit, vector<string>& answer)
+	{
+		for( auto  i=0; i< tickets.size(); ++i)
 		{
-			if (isVisit[i] == true)
+			if (true == isVisit[i] || 
+				tickets[i][0] == tickets[i][1])
 			{
 				continue;
 			}
-
-			if (begin == tickets[i][0])
+				
+			if (start == tickets[i][eStart])
 			{
-				answer.push_back(i);
 				isVisit[i] = true;
-
-				solutionImpl(tickets[i][1], isVisit, tickets, answer);
+				answer.push_back(tickets[i][eEnd]);
+				bool retVal = solutionImpl(tickets[i][eEnd], tickets, isVisit, answer);
+				if (false == retVal)
+				{
+					answer.erase(answer.end() - 1);
+					isVisit[i] = false;
+					continue;
+				}
+				return true;
 			}
+		}
+		if (answer.size() - 1 == tickets.size())
+		{
+			return true;
+		}
+		else
+		{
+			return false;
 		}
 	}
 
 	vector<string> solution(vector<vector<string>> tickets) 
 	{
-		vector<vector<string>> answers;
-		
-		for (auto i=0; i<tickets.size(); ++i)
-		{
-			if (tickets[i][0] != "ICN")
-			{
-				continue;
-			}
+		vector<string> answer;
 
-			vector<int> indies;
-			vector<bool> isVisit;
-			isVisit.resize(tickets.size(), false);
-			isVisit[i] = true;
+		std::sort(tickets.begin(), tickets.end());
 
-			indies.push_back(i);
-			solutionImpl(tickets[i][1], isVisit, tickets, indies);
-
-			vector<string> answer;
-
-			auto it = indies.begin();
-			answer.push_back(tickets[*it][0]);
-
-			while (it != indies.end())
-			{
-				answer.push_back(tickets[*it][1]);
-				it++;
-			}
-
-			answers.push_back(answer);
-		}
-
-		std::sort(answers.begin(), answers.end());
-		return answers[0];
+		vector<bool> isVisit;
+		isVisit.resize(tickets.size(), false);
+		answer.push_back("ICN");
+		solutionImpl("ICN", tickets, isVisit, answer);
+		return answer;
 	}
 }
